@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Players{% endblock %}
+{% block content %}
+<h1>Players ({{ users|length }})</h1>
+<section class="card">
+  <ul class="people">
+  {% for u in users %}
+    <li><a href="{{ url_for('main.player', user_id=u.id) }}">{{ u.name }}</a>
+      <span class="muted">@{{ u.username }}{% if u.is_admin %} · admin{% endif %}</span></li>
+  {% endfor %}
+  </ul>
+</section>
+{% endblock %}

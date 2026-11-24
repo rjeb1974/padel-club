@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Game days{% endblock %}
+{% block content %}
+<h1>Game days
+  {% if current_user.is_admin %}<a class="button primary small" href="{{ url_for('main.new_gameday') }}">+ New</a>{% endif %}
+</h1>
+<section class="card">
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th class="left">Date</th><th class="left">Location</th><th>Players</th><th>Matches</th><th>You</th></tr></thead>
+    <tbody>
+    {% for gd in days %}
+      <tr{% if gd.date >= today %} class="upcoming"{% endif %}>
+        <td class="left"><a href="{{ url_for('main.gameday', gameday_id=gd.id) }}">{{ gd.date.strftime('%a %d %b %Y') }}</a></td>
+        <td class="left">{{ gd.location }}</td>
+        <td>{{ gd.attendances|length }}</td>
+        <td>{{ gd.matches|length }}</td>
+        <td>{% if gd.is_present(current_user) %}<span class="pill yes">✓</span>{% endif %}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="5" class="muted">No game days yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+{% endblock %}

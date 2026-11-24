@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{{ gd.date.isoformat() }}{% endblock %}
+{% block content %}
+<h1>{{ gd.date.strftime('%A %d %B %Y') }}</h1>
+<p class="muted">{{ gd.location }}{% if gd.notes %} · {{ gd.notes }}{% endif %}</p>
+
+{% if current_user.is_admin %}
+<div class="actions">
+  <a class="button small" href="{{ url_for('main.edit_gameday', gameday_id=gd.id) }}">Edit</a>
+  <form method="post" action="{{ url_for('main.delete_gameday', gameday_id=gd.id) }}" class="inline"
+        onsubmit="return confirm('Delete this game day and all its matches?')">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="small danger">Delete</button>
+  </form>
+</div>
+{% endif %}
+
+<div class="grid">
+  <section class="card">
+    <h2>Presences ({{ gd.attendances|length }})</h2>
+    <form method="post" action="{{ url_for('main.toggle_attendance', gameday_id=gd.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {% if gd.is_present(current_user) %}
+        <button>I can't make it</button>
+      {% else %}
+        <button class="primary">I'm in</button>
+      {% endif %}
+    </form>
+    <ul class="people">
+    {% for u in (users if current_user.is_admin else gd.players_present) %}
+      {% set here = gd.is_present(u) %}
+      <li>
+        <span class="pill {{ 'yes' if here else 'no' }}">{{ '✓' if here else '–' }}</span>
+        {{ u.name }}
+        {% if current_user.is_admin and u.id != current_user.id %}
+        <form method="post" action="{{ url_for('main.toggle_attendance', gameday_id=gd.id) }}" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="user_id" value="{{ u.id }}">
+          <button class="link small">{{ 'remove' if here else 'add' }}</button>
+        </form>
+        {% endif %}
+      </li>
+    {% else %}
+      <li class="muted">Nobody yet.</li>
+    {% endfor %}
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>Record a match</h2>
+    {% set use_present = gd.players_present|length >= 4 %}
+    {% set pool = gd.players_present if use_present else users %}
+    <form method="post" action="{{ url_for('main.add_match', gameday_id=gd.id) }}" class="match-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {% for team, keys in [('Team 1', ['a1','a2']), ('Team 2', ['b1','b2'])] %}
+      <fieldset>
+        <legend>{{ team }}</legend>
+        {% for k in keys %}
+        <select name="{{ k }}" required>
+          <option value="">Player…</option>
+          {% for u in pool %}<option value="{{ u.id }}">{{ u.name }}</option>{% endfor %}
+        </select>
+        {% endfor %}
+      </fieldset>
+      {% endfor %}
+      <label>Score (Team 1 first) <input name="score" required placeholder="6-4 3-6 7-5"></label>
+      <button class="primary">Save match</button>
+    </form>
+    {% if not use_present %}
+      <p class="muted small">Showing all players because fewer than 4 are marked present. Players in a match are marked present automatically.</p>
+    {% endif %}
+  </section>
+</div>
+
+<section class="card">
+  <h2>Matches ({{ gd.matches|length }})</h2>
+  {% for m in gd.matches %}
+    <div class="match">
+      <span class="team {{ 'won' if m.winner == 1 }}">{{ m.a1.name }} &amp; {{ m.a2.name }}</span>
+      <span class="score">{{ m.score }}</span>
+      <span class="team {{ 'won' if m.winner == 2 }}">{{ m.b1.name }} &amp; {{ m.b2.name }}</span>
+      {% if current_user.is_admin or m.created_by_id == current_user.id %}
+      <form method="post" action="{{ url_for('main.delete_match', match_id=m.id) }}" class="inline"
+            onsubmit="return confirm('Delete this match?')">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="link small danger">delete</button>
+      </form>
+      {% endif %}
+    </div>
+  {% else %}
+    <p class="muted">No matches recorded yet.</p>
+  {% endfor %}
+</section>
+{% endblock %}

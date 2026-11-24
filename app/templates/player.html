@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ user.name }}{% endblock %}
+{% block content %}
+<h1>{{ user.name }} <span class="muted small">@{{ user.username }}</span></h1>
+
+<div class="stats">
+  <div><strong>{{ s.presences }}</strong><span>presences</span></div>
+  <div><strong>{{ s.played }}</strong><span>matches</span></div>
+  <div><strong>{{ s.wins }}–{{ s.losses }}</strong><span>won–lost</span></div>
+  <div><strong>{{ s.win_pct }}%</strong><span>win rate</span></div>
+  <div><strong>{{ s.sets_won }}–{{ s.sets_lost }}</strong><span>sets</span></div>
+  <div><strong>{{ '%+d' % s.game_diff }}</strong><span>games ±</span></div>
+</div>
+
+<section class="card">
+  <h2>Match history</h2>
+  {% for m in matches %}
+    {% set won = m.winner == m.team_of(user) %}
+    <div class="match">
+      <span class="pill {{ 'yes' if won else 'no' }}">{{ 'W' if won else 'L' }}</span>
+      <a href="{{ url_for('main.gameday', gameday_id=m.gameday_id) }}" class="muted">{{ m.gameday.date.strftime('%d %b %Y') }}</a>
+      <span class="team {{ 'won' if m.winner == 1 }}">{{ m.a1.name }} &amp; {{ m.a2.name }}</span>
+      <span class="score">{{ m.score }}</span>
+      <span class="team {{ 'won' if m.winner == 2 }}">{{ m.b1.name }} &amp; {{ m.b2.name }}</span>
+    </div>
+  {% else %}
+    <p class="muted">No matches yet.</p>
+  {% endfor %}
+</section>
+
+<section class="card">
+  <h2>Presences</h2>
+  {% for gd in gamedays %}
+    <a class="pill yes" href="{{ url_for('main.gameday', gameday_id=gd.id) }}">{{ gd.date.strftime('%d %b %Y') }}</a>
+  {% else %}
+    <p class="muted">No presences yet.</p>
+  {% endfor %}
+</section>
+{% endblock %}

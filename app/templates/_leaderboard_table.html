@@ -1,0 +1,24 @@
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr><th>#</th><th class="left">Player</th><th>Presences</th><th>Played</th><th>W</th><th>L</th><th>Win %</th><th>Sets</th><th>Games ±</th></tr>
+  </thead>
+  <tbody>
+  {% for r in rows %}
+    <tr{% if r.user.id == current_user.id %} class="me"{% endif %}>
+      <td>{{ loop.index }}</td>
+      <td class="left"><a href="{{ url_for('main.player', user_id=r.user.id) }}">{{ r.user.name }}</a></td>
+      <td>{{ r.presences }}</td>
+      <td>{{ r.played }}</td>
+      <td>{{ r.wins }}</td>
+      <td>{{ r.losses }}</td>
+      <td>{{ r.win_pct }}%</td>
+      <td>{{ r.sets_won }}-{{ r.sets_lost }}</td>
+      <td>{{ '%+d' % r.game_diff }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="9" class="muted">No players yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>

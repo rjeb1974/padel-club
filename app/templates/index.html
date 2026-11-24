@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<h1>Hi, {{ current_user.name }}</h1>
+
+<div class="grid">
+  <section class="card">
+    <h2>Upcoming game days</h2>
+    {% for gd in upcoming %}
+      <div class="row">
+        <a href="{{ url_for('main.gameday', gameday_id=gd.id) }}">{{ gd.date.strftime('%a %d %b %Y') }}</a>
+        <span class="muted">{{ gd.location }}</span>
+        <span class="pill {{ 'yes' if gd.is_present(current_user) else 'no' }}">
+          {{ 'Going' if gd.is_present(current_user) else 'Not marked' }}</span>
+        <span class="muted">{{ gd.attendances|length }} going</span>
+      </div>
+    {% else %}
+      <p class="muted">Nothing scheduled.
+        {% if current_user.is_admin %}<a href="{{ url_for('main.new_gameday') }}">Create a game day</a>{% endif %}</p>
+    {% endfor %}
+  </section>
+
+  <section class="card">
+    <h2>Recent game days</h2>
+    {% for gd in recent %}
+      <div class="row">
+        <a href="{{ url_for('main.gameday', gameday_id=gd.id) }}">{{ gd.date.strftime('%a %d %b %Y') }}</a>
+        <span class="muted">{{ gd.attendances|length }} players · {{ gd.matches|length }} matches</span>
+      </div>
+    {% else %}
+      <p class="muted">No past game days yet.</p>
+    {% endfor %}
+  </section>
+</div>
+
+<section class="card">
+  <h2>Top 5 <a class="small" href="{{ url_for('main.leaderboard') }}">full leaderboard →</a></h2>
+  {% include "_leaderboard_table.html" %}
+</section>
+{% endblock %}
