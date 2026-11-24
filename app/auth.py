@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from urllib.parse import urlsplit
 
 from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
@@ -9,6 +10,24 @@ from .models import User
 bp = Blueprint("auth", __name__)
 
 MIN_PASSWORD = 8
+
+# Simple brute-force protection: lock a username after repeated failures.
+MAX_FAILURES = 5
+LOCKOUT = timedelta(minutes=10)
+_failures = {}  # username -> (count, first_failure_time)
+
+
+def _locked(username):
+    count, since = _failures.get(username, (0, None))
+    if since and datetime.now() - since > LOCKOUT:
+        _failures.pop(username, None)
+        return False
+    return count >= MAX_FAILURES
+
+
+def _record_failure(username):
+    count, since = _failures.get(username, (0, datetime.now()))
+    _failures[username] = (count + 1, since)
 
 
 def _safe_next(target):
@@ -67,10 +86,15 @@ def login():
     if request.method == "POST":
         username = request.form.get("username", "").strip().lower()
         password = request.form.get("password", "")
+        if _locked(username):
+            flash("Too many failed attempts. Try again in 10 minutes.", "error")
+            return render_template("login.html"), 429
         user = db.session.scalar(db.select(User).filter_by(username=username))
         if user and user.check_password(password):
+            _failures.pop(username, None)
             login_user(user, remember=bool(request.form.get("remember")))
             return redirect(_safe_next(request.args.get("next")))
+        _record_failure(username)
         flash("Invalid username or password.", "error")
     return render_template("login.html")
 

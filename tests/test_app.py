@@ -13,6 +13,8 @@ def app(tmp_path):
         "WTF_CSRF_ENABLED": False,
         "SQLALCHEMY_DATABASE_URI": "sqlite:///" + str(tmp_path / "test.db"),
     })
+    from app import auth
+    auth._failures.clear()
     yield app
 
 
@@ -68,6 +70,15 @@ def test_login_wrong_password(client):
     logout(client)
     r = login(client, "alice", "nope-nope")
     assert b"Invalid username or password" in r.data
+
+
+def test_login_lockout(client):
+    register(client, "alice")
+    logout(client)
+    for _ in range(5):
+        login(client, "alice", "wrong-pass")
+    r = login(client, "alice")  # even the right password is refused while locked
+    assert b"Too many failed attempts" in r.data
 
 
 def test_registration_closed(app, client):

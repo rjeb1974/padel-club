@@ -36,7 +36,18 @@ def create_app(test_config=None):
         ),
         # Set ALLOW_REGISTRATION=0 to close sign-ups once everyone has an account.
         ALLOW_REGISTRATION=os.environ.get("ALLOW_REGISTRATION", "1") == "1",
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE="Lax",
+        REMEMBER_COOKIE_HTTPONLY=True,
+        REMEMBER_COOKIE_SAMESITE="Lax",
     )
+    # PRODUCTION=1 when served over HTTPS behind a host's proxy.
+    if os.environ.get("PRODUCTION") == "1":
+        from werkzeug.middleware.proxy_fix import ProxyFix
+
+        app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+        app.config.update(SESSION_COOKIE_SECURE=True, REMEMBER_COOKIE_SECURE=True,
+                          PREFERRED_URL_SCHEME="https")
     if test_config:
         app.config.update(test_config)
 
