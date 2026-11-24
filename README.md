@@ -1,4 +1,4 @@
-# Padel Club
+﻿# Padel Club
 
 A small web app for a group of padel players to track **presences** at game days and **match scores**, with a leaderboard. Each player has their own login.
 
@@ -61,25 +61,34 @@ run.py            entry point
 tests/            pytest suite
 ```
 
-## Hosting on PythonAnywhere
+## Hosting: Render (app) + Supabase (database)
 
-**First time**
-1. Create a free account at https://www.pythonanywhere.com.
-2. **Web** tab → *Add a new web app* → *Manual configuration* → choose the newest Python version offered (e.g. 3.13).
-3. On your PC, build the upload package: `git archive -o dist/padel-app.zip HEAD`
-4. **Files** tab → upload `padel-app.zip` into your home directory.
-5. Open a **Bash console** (Consoles tab) and run (using the Python version from step 2):
-   ```bash
-   unzip -o padel-app.zip -d ~/padel
-   bash ~/padel/deploy/setup_pythonanywhere.sh 3.13
-   ```
-6. Back on the **Web** tab: set *Virtualenv* to `/home/<you>/.virtualenvs/padel`, turn on *Force HTTPS*, click **Reload**.
-7. Open `https://<you>.pythonanywhere.com` and register. The first account becomes the admin.
+```
+players' browsers  ->  Render (runs the Python app, HTTPS)  ->  Supabase (PostgreSQL)
+```
 
-**Updating later**: repeat steps 3–5. The database in `~/padel/instance` is kept.
+**1. Supabase (database)**
+1. Create a project at https://supabase.com (free plan). Choose a strong database password and save it.
+2. Click **Connect** (top of the project page) → **Session pooler** → copy the URI, e.g.
+   `postgresql://postgres.abcd1234:[YOUR-PASSWORD]@aws-0-eu-west-1.pooler.supabase.com:5432/postgres`
+3. Replace `[YOUR-PASSWORD]` with your database password.
 
-**Closing registration**: once everyone has an account, change `ALLOW_REGISTRATION` to `"0"` in the WSGI file (Web tab → WSGI configuration file) and click Reload.
+Use the *Session pooler* string, not "Direct connection": the direct one is IPv6-only and Render can't reach it.
+The app creates its tables automatically on first start.
 
-**Backups**: download `~/padel/instance/padel.db` from the Files tab now and then.
+**2. GitHub (code)**: push this repository to a (private) GitHub repo.
 
-The free plan asks you to click *Run until 3 months from today* on the Web tab every 3 months.
+**3. Render (app)**
+1. Sign up at https://render.com with your GitHub account.
+2. **New → Blueprint** → pick the repo. Render reads `render.yaml`.
+3. When asked for `DATABASE_URL`, paste the Supabase string from step 1. Click **Apply**.
+4. After the first deploy (a few minutes) open `https://padel-club-xxxx.onrender.com` and register. The first account becomes the admin.
+
+**Updating**: `git push`. Render redeploys automatically; data lives in Supabase and is kept.
+
+**Closing registration**: Render dashboard → the service → *Environment* → set `ALLOW_REGISTRATION` to `0` → save (it redeploys).
+
+**Free-plan limits**
+- Render: the app sleeps after ~15 minutes without visitors; the next visit takes 30–60 s to wake it.
+- Supabase: a project with no activity for a week is paused; restore it with one click in the dashboard. Regular use of the app keeps it active.
+- Data can be viewed and exported in Supabase's *Table editor*.

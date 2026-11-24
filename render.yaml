@@ -1,0 +1,21 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: padel-club
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    # One worker keeps the login-lockout counter in one place; threads handle concurrency.
+    startCommand: gunicorn run:app --workers 1 --threads 4 --timeout 60
+    healthCheckPath: /login
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.13"
+      - key: PRODUCTION
+        value: "1"
+      - key: ALLOW_REGISTRATION
+        value: "1"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false   # Render asks for this: paste the Supabase "Session pooler" connection string

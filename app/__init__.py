@@ -24,16 +24,38 @@ def _load_secret_key(instance_path):
         return f.read().strip()
 
 
+def _database_url(instance_path):
+    """DATABASE_URL from the environment (e.g. Supabase), or a local SQLite file."""
+    url = os.environ.get("DATABASE_URL")
+    if not url:
+        return "sqlite:///" + os.path.join(instance_path, "padel.db")
+    # Supabase/Heroku-style URLs -> use the psycopg 3 driver.
+    for prefix in ("postgres://", "postgresql://"):
+        if url.startswith(prefix):
+            return "postgresql+psycopg://" + url[len(prefix):]
+    return url
+
+
+def _engine_options(url):
+    if not url.startswith("postgresql"):
+        return {}
+    return {
+        "pool_pre_ping": True,   # survive connections dropped by the pooler/idle DB
+        "pool_recycle": 300,
+        # Server-side prepared statements break with Supabase's transaction pooler.
+        "connect_args": {"prepare_threshold": None},
+    }
+
+
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     os.makedirs(app.instance_path, exist_ok=True)
 
+    db_url = _database_url(app.instance_path)
     app.config.from_mapping(
         SECRET_KEY=_load_secret_key(app.instance_path),
-        SQLALCHEMY_DATABASE_URI=os.environ.get(
-            "DATABASE_URL",
-            "sqlite:///" + os.path.join(app.instance_path, "padel.db"),
-        ),
+        SQLALCHEMY_DATABASE_URI=db_url,
+        SQLALCHEMY_ENGINE_OPTIONS=_engine_options(db_url),
         # Set ALLOW_REGISTRATION=0 to close sign-ups once everyone has an account.
         ALLOW_REGISTRATION=os.environ.get("ALLOW_REGISTRATION", "1") == "1",
         SESSION_COOKIE_HTTPONLY=True,
