@@ -18,9 +18,8 @@ Built with Python, Flask, SQLAlchemy and SQLite.
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-python run.py
+.\.venv\Scripts\python -m pip install -r requirements-dev.txt
+.\.venv\Scripts\python run.py
 ```
 
 Open http://127.0.0.1:5000 and register. The first account becomes the admin.
@@ -44,6 +43,7 @@ flask --app run make-admin <username>
 ## Tests
 
 ```powershell
+pip install -r requirements-dev.txt
 python -m pytest
 ```
 
@@ -61,9 +61,25 @@ run.py            entry point
 tests/            pytest suite
 ```
 
-## Going online
+## Hosting on PythonAnywhere
 
-`python run.py` starts a development server. To let the group use the app from their phones:
-- Use a production server, e.g. `pip install waitress` and then `waitress-serve --port=8000 run:app`.
-- Set a fixed `SECRET_KEY`.
-- Put it behind HTTPS, or deploy to a host such as PythonAnywhere, Render or Fly.io.
+**First time**
+1. Create a free account at https://www.pythonanywhere.com.
+2. **Web** tab → *Add a new web app* → *Manual configuration* → choose the newest Python version offered (e.g. 3.13).
+3. On your PC, build the upload package: `git archive -o dist/padel-app.zip HEAD`
+4. **Files** tab → upload `padel-app.zip` into your home directory.
+5. Open a **Bash console** (Consoles tab) and run (using the Python version from step 2):
+   ```bash
+   unzip -o padel-app.zip -d ~/padel
+   bash ~/padel/deploy/setup_pythonanywhere.sh 3.13
+   ```
+6. Back on the **Web** tab: set *Virtualenv* to `/home/<you>/.virtualenvs/padel`, turn on *Force HTTPS*, click **Reload**.
+7. Open `https://<you>.pythonanywhere.com` and register. The first account becomes the admin.
+
+**Updating later**: repeat steps 3–5. The database in `~/padel/instance` is kept.
+
+**Closing registration**: once everyone has an account, change `ALLOW_REGISTRATION` to `"0"` in the WSGI file (Web tab → WSGI configuration file) and click Reload.
+
+**Backups**: download `~/padel/instance/padel.db` from the Files tab now and then.
+
+The free plan asks you to click *Run until 3 months from today* on the Web tab every 3 months.
