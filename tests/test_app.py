@@ -172,6 +172,18 @@ def test_only_creator_or_admin_deletes_match(client):
     assert client.post("/matches/1/delete").status_code == 302
 
 
+def test_pwa_routes(client):
+    m = client.get("/manifest.webmanifest")
+    assert m.status_code == 200 and m.get_json()["display"] == "standalone"
+    sw = client.get("/sw.js")
+    assert sw.status_code == 200 and "javascript" in sw.content_type
+    assert client.get("/offline").status_code == 200
+    links = client.get("/.well-known/assetlinks.json")
+    assert links.status_code == 200 and isinstance(links.get_json(), list)
+    # The download page is public so players can get the app before logging in.
+    assert client.get("/app").status_code == 200
+
+
 def test_admin_creates_user(client, app):
     register(client, "alice")
     r = client.post("/admin/users", data={

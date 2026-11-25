@@ -81,10 +81,12 @@ def create_app(test_config=None):
 
     from . import models  # noqa: F401  (register models)
     from .auth import bp as auth_bp
+    from .pwa import bp as pwa_bp
     from .views import bp as main_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
+    app.register_blueprint(pwa_bp)
 
     with app.app_context():
         db.create_all()

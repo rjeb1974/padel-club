@@ -112,6 +112,9 @@ tr.upcoming td:first-child a { font-weight: 600; }
 .match .team.won { font-weight: 700; }
 .match .score { font-variant-numeric: tabular-nums; background: var(--no); padding: .1rem .5rem; border-radius: 4px; }
 
+ol.steps { padding-left: 1.2rem; }
+ol.steps li { margin-bottom: .4rem; }
+
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: .8rem; margin-bottom: 1rem; }
 .stats div { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: .8rem; text-align: center; }
 .stats strong { display: block; font-size: 1.4rem; }

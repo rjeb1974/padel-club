@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1f8a5b">
+  <title>Offline · Padel Club</title>
+  <style>
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px;
+           font: 16px/1.5 system-ui, sans-serif; background: #f4f6f3; color: #1d2a24; text-align: center; }
+    @media (prefers-color-scheme: dark) { body { background: #121815; color: #e4ece8; } }
+    button { margin-top: 1rem; padding: .6rem 1.4rem; border: 0; border-radius: 6px;
+             background: #1f8a5b; color: #fff; font: inherit; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div>
+    <div style="font-size:3rem">🎾</div>
+    <h1>No connection</h1>
+    <p>Padel Club needs the internet. Check your connection and try again.</p>
+    <button onclick="location.reload()">Try again</button>
+  </div>
+</body>
+</html>

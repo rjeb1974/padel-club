@@ -4,3 +4,11 @@ __pycache__/
 instance/
 .pytest_cache/
 dist/
+
+# Android: build output and the signing key (keep a backup of the key outside git!)
+android/.gradle/
+android/build/
+android/app/build/
+android/keystore/
+android/keystore.properties
+android/local.properties

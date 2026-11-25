@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Get the app{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <h1>📱 Get the app</h1>
+
+  <h2>Android</h2>
+  {% if has_apk %}
+    <p><a class="button primary" href="{{ url_for('pwa.download_apk') }}">Download for Android</a></p>
+    <ol class="steps">
+      <li>Tap <strong>Download</strong> above, then open the downloaded file.</li>
+      <li>If Android says installing from this source isn't allowed, tap <strong>Settings</strong>,
+          turn on <strong>Allow from this source</strong>, and go back.</li>
+      <li>Tap <strong>Install</strong>. If Play Protect warns about an unknown app,
+          tap <strong>More details → Install anyway</strong>.</li>
+      <li>Open <strong>Padel Club</strong> from your home screen and log in.</li>
+    </ol>
+  {% else %}
+    <p class="muted">The Android download isn't available yet.</p>
+  {% endif %}
+
+  <h2>iPhone</h2>
+  <p>Open this site in <strong>Safari</strong>, tap the <strong>Share</strong> button,
+     then <strong>Add to Home Screen</strong>.</p>
+
+  <p class="muted small">The app always shows the live site, so it never needs updating for new features.</p>
+</div>
+{% endblock %}

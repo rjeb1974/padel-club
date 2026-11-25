@@ -5,6 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Padel Club{% endblock %} · Padel Club</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="manifest" href="{{ url_for('pwa.manifest') }}">
+  <meta name="theme-color" content="#1f8a5b">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='icons/favicon-32.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/apple-touch-icon.png') }}">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Padel Club">
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+    }
+  </script>
 </head>
 <body>
 <header class="topbar">
@@ -15,6 +26,7 @@
     <a href="{{ url_for('main.leaderboard') }}">Leaderboard</a>
     <a href="{{ url_for('main.players') }}">Players</a>
     {% if current_user.is_admin %}<a href="{{ url_for('main.admin_users') }}">Users</a>{% endif %}
+    <a href="{{ url_for('pwa.get_app') }}">App</a>
     <a href="{{ url_for('auth.account') }}">{{ current_user.name }}</a>
     <form method="post" action="{{ url_for('auth.logout') }}" class="inline">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
